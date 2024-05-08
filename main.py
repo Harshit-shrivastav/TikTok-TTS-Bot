@@ -1,11 +1,11 @@
 import io
-from decouple import config
+from os import environ
 from telethon import TelegramClient, events, Button
 from functions import *
 
-API_ID = config("API_ID", cast=int)
-API_HASH = config("API_HASH")
-BOT_TOKEN = config("BOT_TOKEN")
+API_ID = environ.get('API_ID')
+API_HASH = environ.get('API_HASH')
+BOT_TOKEN = environ.get('BOT_TOKEN')
 
 TEXT_BYTE_LIMIT = 300
 AUDIO_FORMAT = 'mp3'
