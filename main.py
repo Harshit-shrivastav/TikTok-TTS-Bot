@@ -77,7 +77,7 @@ async def voice_handler(event):
 
     audio_data = generate_audio(text, selected_voice)
     if audio_data:
-        await event.send_file(chat, audio_data)
+        await client.send_file(event.chat_id, audio_data)
     else:
         await event.reply("Failed to generate audio.")
 
