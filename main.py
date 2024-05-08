@@ -1,6 +1,3 @@
-import requests
-import json
-import base64
 import io
 from telethon import TelegramClient, events, Button
 from functions import *
