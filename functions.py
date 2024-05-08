@@ -1,3 +1,7 @@
+import requests
+import json
+import base64
+
 ENDPOINT = 'https://tiktok-tts.weilnet.workers.dev'
 
 voices_list = [
