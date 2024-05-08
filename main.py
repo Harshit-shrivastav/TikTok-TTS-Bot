@@ -51,16 +51,16 @@ def generate_audio(text, voice):
 
 @client.on(events.NewMessage(pattern='/start'))
 async def start_handler(event):
-    await event.respond('Hello! Send me some text, and I will convert it to speech using the TikTok TTS service.')
+    await event.reply('Hello! Send me some text, and I will convert it to speech using the TikTok TTS service.')
 
 @client.on(events.NewMessage(pattern='/voices'))
 async def voices_handler(event):
     voice_buttons = [
         [Button.inline("English US - Female", data=b"en_us_001")],
         [Button.inline("English US - Male 1", data=b"en_us_006")],
-        # ... (add the rest of the voice options here)
+    
     ]
-    await event.respond("Select a voice:", buttons=voice_buttons)
+    await event.reply("Select a voice:", buttons=voice_buttons)
 
 @client.on(events.CallbackQuery())
 async def voice_handler(event):
@@ -72,14 +72,14 @@ async def voice_handler(event):
     text = message.message
 
     if len(text.encode('utf-8')) > TEXT_BYTE_LIMIT:
-        await event.respond(f"Text must not be over {TEXT_BYTE_LIMIT} UTF-8 characters.")
+        await event.reply(f"Text must not be over {TEXT_BYTE_LIMIT} UTF-8 characters.")
         return
 
     audio_data = generate_audio(text, selected_voice)
     if audio_data:
-        await event.respond(file=audio_data, force_document=True)
+        await event.send_file(chat, audio_data)
     else:
-        await event.respond("Failed to generate audio.")
+        await event.reply("Failed to generate audio.")
 
 def main():
     if not check_service_availability():
