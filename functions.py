@@ -1,4 +1,4 @@
-
+ENDPOINT = 'https://tiktok-tts.weilnet.workers.dev'
 
 voices_list = [
     "1. English US - Female",
