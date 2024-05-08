@@ -3,13 +3,12 @@ import json
 import base64
 import io
 from telethon import TelegramClient, events, Button
+from functions import *
 
 API_ID = 4680197
 API_HASH = '495b0228624028d635bd748b22985f67'
 BOT_TOKEN = '5810975688:AAHc57W24SQu6_Nb9KnsW0eOxEgbsRmVImo'
 
-ENDPOINT = 'https://tiktok-tts.weilnet.workers.dev'
-TEXT_BYTE_LIMIT = 300
 AUDIO_FORMAT = 'mp3'
 
 client = TelegramClient('tiktok_tts_bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
