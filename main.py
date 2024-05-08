@@ -1,21 +1,18 @@
-import os
 import requests
 import json
 import base64
 import io
-from telethon import TelegramClient, sync, events, Button
+from telethon import TelegramClient, events, Button
 
-# Telegram bot configuration
+
 API_ID = 4680197
 API_HASH = '495b0228624028d635bd748b22985f67'
 BOT_TOKEN = '5810975688:AAHc57W24SQu6_Nb9KnsW0eOxEgbsRmVImo'
 
-# TikTok TTS configuration
 ENDPOINT = 'https://tiktok-tts.weilnet.workers.dev'
 TEXT_BYTE_LIMIT = 300
 AUDIO_FORMAT = 'mp3'
 
-# Telegram client
 client = TelegramClient('tiktok_tts_bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
 
 user_text = {}
@@ -69,63 +66,27 @@ voices_list = [
 ]
 
 voices_map = {
-    "1": "en_us_001",
-    "2": "en_us_006",
-    "3": "en_us_007",
-    "4": "en_us_009",
-    "5": "en_us_010",
-    "6": "en_uk_001",
-    "7": "en_uk_003",
-    "8": "en_au_001",
-    "9": "en_au_002",
-    "10": "fr_001",
-    "11": "fr_002",
-    "12": "de_001",
-    "13": "de_002",
-    "14": "es_002",
-    "15": "es_mx_002",
-    "16": "es_male_m3",
-    "17": "es_female_f6",
-    "18": "es_female_fp1",
-    "19": "es_mx_female_supermom",
-    "20": "es_mx_male_transformer",
-    "21": "br_003",
-    "22": "br_004",
-    "23": "br_005",
-    "24": "id_001",
-    "25": "jp_001",
-    "26": "jp_003",
-    "27": "jp_005",
-    "28": "jp_006",
-    "29": "kr_002",
-    "30": "kr_004",
-    "31": "kr_003",
-    "32": "en_us_ghostface",
-    "33": "en_us_chewbacca",
-    "34": "en_us_c3po",
-    "35": "en_us_stitch",
-    "36": "en_us_stormtrooper",
-    "37": "en_us_rocket",
-    "38": "en_female_f08_salut_damour",
-    "39": "en_male_m03_lobby",
-    "40": "en_male_m03_sunshine_soon",
-    "41": "en_female_f08_warmy_breeze",
-    "42": "en_female_ht_f08_glorious",
-    "43": "en_male_sing_funny_it_goes_up",
-    "44": "en_male_m2_xhxs_m03_silly",
-    "45": "en_female_ht_f08_wonderful_world"
+    str(i + 1): voice_id for i, voice_id in enumerate([
+        "en_us_001", "en_us_006", "en_us_007", "en_us_009", "en_us_010",
+        "en_uk_001", "en_uk_003", "en_au_001", "en_au_002", "fr_001",
+        "fr_002", "de_001", "de_002", "es_002", "es_mx_002", "es_male_m3",
+        "es_female_f6", "es_female_fp1", "es_mx_female_supermom",
+        "es_mx_male_transformer", "br_003", "br_004", "br_005", "id_001",
+        "jp_001", "jp_003", "jp_005", "jp_006", "kr_002", "kr_004", "kr_003",
+        "en_us_ghostface", "en_us_chewbacca", "en_us_c3po", "en_us_stitch",
+        "en_us_stormtrooper", "en_us_rocket", "en_female_f08_salut_damour",
+        "en_male_m03_lobby", "en_male_m03_sunshine_soon",
+        "en_female_f08_warmy_breeze", "en_female_ht_f08_glorious",
+        "en_male_sing_funny_it_goes_up", "en_male_m2_xhxs_m03_silly",
+        "en_female_ht_f08_wonderful_world"
+    ])
 }
 
 def check_service_availability():
     try:
         response = requests.get(f"{ENDPOINT}/api/status")
         data = response.json()
-        if response.status_code == 200 and data.get('data') and data['data'].get('available'):
-            print(f"{data['data']['meta']['dc']} (age {data['data']['meta']['age']} minutes) is able to provide service")
-            return True
-        else:
-            print(f"Service is unavailable: {data.get('message', 'Unknown error')}")
-            return False
+        return response.status_code == 200 and data.get('data') and data['data'].get('available')
     except requests.exceptions.RequestException as e:
         print(f"Error querying API status: {e}")
         return False
@@ -137,8 +98,7 @@ def generate_audio(text, voice):
             data = response.json()
             if data.get('data'):
                 # Decode base64-encoded audio data
-                audio_data = base64.b64decode(data['data'])
-                return audio_data
+                return base64.b64decode(data['data'])
             else:
                 print(f"Generation failed: {data.get('error', 'Unknown error')}")
                 return None
@@ -151,27 +111,32 @@ def generate_audio(text, voice):
 
 @client.on(events.NewMessage(pattern='/start'))
 async def start_handler(event):
-    await event.reply('Hello! Send me some text, and I will convert it to speech using the TikTok TTS service.')
+    await event.reply('Hello! Send me some text, and I will convert it to speech using the TikTok TTS service.', buttons=[Button.url("Source Code", url="https://github.com/Harshit-shrivastav/TikTok-TTS-Bot")])
 
 @client.on(events.NewMessage(func=lambda e: e.is_private and not e.text.startswith('/'), pattern=r'(?!^/).*'))
 async def text_input_handler(event):
     user_id = event.sender_id
     user_text[user_id] = event.text
-    voice_buttons = [Button.inline(f"{i}. {voice}", data=voices_map[str(i)].encode()) for i, voice in enumerate(voices_list, start=1)]
-    voice_buttons_rows = [voice_buttons[i:i+3] for i in range(0, len(voice_buttons), 3)]  
-    await event.reply(f"Now, select a voice:", buttons=[voice_buttons_rows])
+    voice_buttons = []
+    for i in range(0, len(voices_list), 3):
+        chunk = voices_list[i:i + 3]
+        row = [Button.inline(voice_label, data=voices_map[str(index)].encode()) for index, voice_label in enumerate(chunk, start=i + 1)]
+        voice_buttons.append(row)
 
-    
+    await event.reply(f"You entered: {event.text}\nNow, select a voice:", buttons=voice_buttons)
+
 @client.on(events.CallbackQuery())
 async def voice_selection_handler(event):
     user_id = event.sender_id
     selected_voice = event.data.decode()
     await event.answer(f"You selected: {selected_voice}")
+
     if user_id in user_text:
         text = user_text[user_id]
         if len(text.encode('utf-8')) > TEXT_BYTE_LIMIT:
             await event.reply(f"Text must not be over {TEXT_BYTE_LIMIT} UTF-8 characters.")
             return
+
         audio_data = generate_audio(text, selected_voice)
         if audio_data:
             audio_file = io.BytesIO(audio_data)
@@ -185,11 +150,12 @@ async def voice_selection_handler(event):
 def main():
     if not check_service_availability():
         return
-    print("Bot is running...")
+
+    print("Telegram bot is running...")
     try:
         client.run_until_disconnected()
     except Exception as e:
-        print(f"Error running bot: {e}")
+        print(f"Error running Telegram bot: {e}")
 
 if __name__ == "__main__":
     main()
