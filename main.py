@@ -2,6 +2,7 @@ import os
 import requests
 import json
 import base64
+import io
 from telethon import TelegramClient, sync, events, Button
 
 # Telegram bot configuration
@@ -12,6 +13,7 @@ BOT_TOKEN = '5810975688:AAHc57W24SQu6_Nb9KnsW0eOxEgbsRmVImo'
 # TikTok TTS configuration
 ENDPOINT = 'https://tiktok-tts.weilnet.workers.dev'
 TEXT_BYTE_LIMIT = 300
+AUDIO_FORMAT = 'mp3'  # or 'wav'
 
 # Telegram client
 client = TelegramClient('tiktok_tts_bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
@@ -56,18 +58,16 @@ def generate_audio(text, voice):
 async def start_handler(event):
     await event.reply('Hello! Send me some text, and I will convert it to speech using the TikTok TTS service.')
 
-@client.on(events.NewMessage(pattern='/voice'))
-async def voice_handler(event):
+@client.on(events.NewMessage(func=lambda e: e.is_private and not e.text.startswith('/'), pattern=r'(?!^/).*'))
+async def text_input_handler(event):
     user_id = event.sender_id
-    if user_id not in user_text:
-        await event.reply("Please enter the text you want to convert to speech.")
-    else:
-        text = user_text[user_id]
-        voice_buttons = [
-            [Button.inline("English US - Female", data=b"en_us_001")],
-            [Button.inline("English US - Male 1", data=b"en_us_006")],
-        ]
-        await event.reply(f"You entered: {text}\nNow, select a voice:", buttons=voice_buttons)
+    user_text[user_id] = event.text
+
+    voice_buttons = [
+        [Button.inline("English US - Female", data=b"en_us_001")],
+        [Button.inline("English US - Male 1", data=b"en_us_006")],
+    ]
+    await event.reply(f"You entered: {event.text}\nNow, select a voice:", buttons=voice_buttons)
 
 @client.on(events.CallbackQuery())
 async def voice_selection_handler(event):
@@ -83,17 +83,16 @@ async def voice_selection_handler(event):
 
         audio_data = generate_audio(text, selected_voice)
         if audio_data:
-            await client.send_file(event.chat_id, audio_data)
+            # Save audio data to a temporary file
+            audio_file = io.BytesIO(audio_data)
+            audio_file.name = f"audio.{AUDIO_FORMAT}"
+
+            # Send the audio file
+            await client.send_file(event.chat_id, audio_file)
         else:
             await event.reply("Failed to generate audio.")
     else:
         await event.reply("No text entered. Please enter text first.")
-
-@client.on(events.NewMessage(func=lambda e: e.is_private and e.text))
-async def text_input_handler(event):
-    user_id = event.sender_id
-    user_text[user_id] = event.text
-    await event.reply("Text received. Enter /voice to select a voice and generate audio.")
 
 def main():
     if not check_service_availability():
