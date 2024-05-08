@@ -157,12 +157,9 @@ async def start_handler(event):
 async def text_input_handler(event):
     user_id = event.sender_id
     user_text[user_id] = event.text
-    #voice_buttons = [Button.inline(f"{i}. {voice}", data=voices_map[str(i)].encode()) for i, voice in enumerate(voices_list, start=1)]
-
     voice_buttons = [Button.inline(f"{i}. {voice}", data=voices_map[str(i)].encode()) for i, voice in enumerate(voices_list, start=1)]
     voice_buttons_rows = [voice_buttons[i:i+3] for i in range(0, len(voice_buttons), 3)]  
-    
-    await event.reply(f"You entered: {event.text}\nNow, select a voice:", buttons=[voice_buttons_rows])
+    await event.reply(f"Now, select a voice:", buttons=[voice_buttons_rows])
 
     
 @client.on(events.CallbackQuery())
