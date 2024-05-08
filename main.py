@@ -1,4 +1,4 @@
-import io
+import io, os
 from telethon import TelegramClient, events, Button
 from functions import *
 
