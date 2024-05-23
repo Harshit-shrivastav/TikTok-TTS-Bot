@@ -7,17 +7,20 @@ WORKDIR /app
 # Copy the requirements.txt file into the container at /app
 COPY requirements.txt .
 
-# Install any dependencies specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Install virtualenv
+RUN pip install --no-cache-dir virtualenv
+
+# Create a virtual environment
+RUN virtualenv venv
+
+# Activate the virtual environment and install dependencies
+RUN . venv/bin/activate && pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the working directory contents into the container at /app
 COPY . .
 
-# Set environment variables (if you have any, add them here)
-ENV BOT_TOKEN = "TOKEN"
-
 # Expose port 8000 to allow traffic on that port
 EXPOSE 8000
 
-# Run main.py when the container launches
-CMD ["python", "main.py"]
+# Run main.py with the virtual environment when the container launches
+CMD ["sh", "-c", ". venv/bin/activate && python main.py"]
