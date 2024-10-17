@@ -14,6 +14,9 @@ Welcome to the TikTok TTS Telegram Bot repository! This bot converts text messag
 - `requests` library
 - `telethon` library
 
+### 🆓 If you want a free bot hosting checkout this article here:
+https://github.com/Harshit-shrivastav/Free-Telegram-bot-hosting
+
 ## Installation and Usage 🚀
 
 1. Clone this repository:
